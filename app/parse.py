@@ -24,15 +24,6 @@ class Product:
 
 PRODUCT_FIELDS = [field.name for field in fields(Product)]
 
-_driver: WebDriver | None = None
-
-def get_driver() -> WebDriver:
-    return _driver
-
-def set_driver(new_driver: WebDriver) -> None:
-    global _driver
-    _driver = new_driver
-
 
 def parse_single_product(product_soup: BeautifulSoup) -> Product:
     return Product(
@@ -47,12 +38,7 @@ def parse_single_product(product_soup: BeautifulSoup) -> Product:
     )
 
 
-def get_all_products(url: str = "", driver: WebDriver = None) -> list[Product]:
-    if driver is None:
-        driver = get_driver()  # Use the global driver if not provided
-    if driver is None:
-        raise RuntimeError("No WebDriver instance is available.")
-
+def get_all_products(url: str, driver: WebDriver) -> list[Product]:
     driver.get(url)
 
     while True:
@@ -86,9 +72,8 @@ def save_to_csv(products: [Product], filename: str) -> None:
 
 
 def main() -> None:
-    with webdriver.Chrome() as new_driver:
-        set_driver(new_driver)
-        products_by_file = parse_urls(driver=new_driver, urls=URLS_FIELDS)
+    with webdriver.Chrome() as driver:
+        products_by_file = parse_urls(driver=driver, urls=URLS_FIELDS)
 
         for filename, products in products_by_file.items():
             save_to_csv(products, filename)
